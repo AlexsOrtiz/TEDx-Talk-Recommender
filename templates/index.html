@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recomendador de Charlas TEDx</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-microphone-alt"></i> TEDx Talk Recommender</h1>
+            <p class="subtitle">Find TEDx talks related to your content</p>
+            <a href="/explanation" class="explanation-button">
+                <i class="fas fa-code"></i> How It Works
+            </a>
+        </header>
+
+        <section class="form-section">
+            <form id="recommend-form">
+                <div class="input-group">
+                    <label for="talk_content">Describe your talk:</label>
+                    <textarea 
+                        id="talk_content" 
+                        placeholder="Write the content or topic of your talk here..." 
+                        rows="5" 
+                        required
+                    ></textarea>
+                </div>
+                <button type="submit">
+                    <i class="fas fa-search"></i> Get Recommendations
+                </button>
+            </form>
+        </section>
+
+        <section id="recommendations">
+            <h2><i class="fas fa-list"></i> Recommended Talks</h2>
+            <div id="loading" class="loading" style="display: none;">
+                <i class="fas fa-spinner fa-spin"></i> Looking for recommendations...
+            </div>
+            <ul id="recommendations-list"></ul>
+        </section>
+    </div>
+
+    <style>
+        .explanation-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: #e50000;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .explanation-button:hover {
+            background: #c70000;
+            transform: translateY(-2px);
+        }
+    </style>
+
+    <script>
+        document.getElementById('recommend-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const talkContent = document.getElementById('talk_content').value;
+            const loading = document.getElementById('loading');
+            const recommendationsList = document.getElementById('recommendations-list');
+            
+            // Mostrar loading
+            loading.style.display = 'block';
+            recommendationsList.innerHTML = '';
+            
+            fetch('/recommend', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `talk_content=${encodeURIComponent(talkContent)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                loading.style.display = 'none';
+                
+                if (data.length === 0) {
+                    recommendationsList.innerHTML = `
+                        <li class="no-results">
+                            <i class="fas fa-info-circle"></i>
+                            No se encontraron recomendaciones. Intenta con un contenido más específico.
+                        </li>
+                    `;
+                    return;
+                }
+
+                data.forEach(talk => {
+                    const listItem = document.createElement('li');
+                    listItem.innerHTML = `
+                        <div class="talk-header">
+                            <i class="fas fa-user-circle"></i>
+                            <h3>${talk.main_speaker}</h3>
+                        </div>
+                        <p class="talk-details">${talk.details}</p>
+                    `;
+                    recommendationsList.appendChild(listItem);
+                });
+            })
+            .catch(error => {
+                loading.style.display = 'none';
+                recommendationsList.innerHTML = `
+                    <li class="error">
+                        <i class="fas fa-exclamation-circle"></i>
+                        Ha ocurrido un error. Por favor, intenta nuevamente.
+                    </li>
+                `;
+                console.error('Error:', error);
+            });
+        });
+    </script>
+</body>
+</html>
