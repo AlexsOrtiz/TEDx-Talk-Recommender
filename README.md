@@ -25,7 +25,7 @@ A machine learning-based web application that recommends TEDx talks based on use
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/tedx-talk-recommender.git
+[git clone https://github.com/yourusername/tedx-talk-recommender.git](https://github.com/AlexsOrtiz/TEDx-Talk-Recommender.git)
 cd tedx-talk-recommender
 ```
 
